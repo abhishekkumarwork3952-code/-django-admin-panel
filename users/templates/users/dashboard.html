@@ -1,0 +1,88 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Internet Art Tools & Applications</title>
+<link rel="stylesheet" href="{% static 'users/style.css' %}">
+</head>
+<body>
+    <header class="title">INTERNET ART TOOLS & APPLICATIONS</header>
+
+    <div class="layout">
+        <aside class="sidebar">
+            <button class="nav-btn">AI Mailer Pro</button>
+            <button class="nav-btn">AI Mailer V1.0</button>
+            <button class="nav-btn">OTHER TOOLS</button>
+            <button class="nav-btn">FOR FUTURE</button>
+            <a class="logout-side" href="{% url 'logout' %}">LOGOUT</a>
+        </aside>
+
+        <main class="content">
+            {% if msg %}<div class="msg">{{ msg }}</div>{% endif %}
+
+            <div class="top-actions">
+                <form class="inline-form" method="post" action="{% url 'create_user' %}">
+                    {% csrf_token %}
+                    <button class="action-btn create" type="submit">Create User</button>
+                    <input class="txt" name="user_id" placeholder="User ID" required>
+                    <input class="txt" name="password" placeholder="Password" required>
+                </form>
+
+                <div class="action-row">
+                    <form class="inline-form" method="post" action="{% url 'create_user' %}">
+                        {% csrf_token %}
+                        <button class="action-btn create small" type="submit">Create</button>
+                        <input class="txt small" name="user_id" placeholder="User ID" required>
+                        <input class="txt small" name="password" placeholder="Password" required>
+                    </form>
+
+                    <div class="right-col">
+                        <button disabled class="action-btn disable small" type="button">Disable</button>
+                        <button disabled class="action-btn enable small" type="button">Enable</button>
+                        <button disabled class="action-btn delete small" type="button">Delete</button>
+                    </div>
+                </div>
+            </div>
+
+            <table class="grid">
+                <thead>
+                    <tr>
+                        <th>USER LIST</th>
+                        <th>PASSWORD</th>
+                        <th>Status</th>
+                        <th>Log In</th>
+                        <th>Logout</th>
+                        <th>Device</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for u in users %}
+                    <tr>
+                        <td>{{ u.user_id }}</td>
+                        <td>{{ u.password }}</td>
+                        <td>
+                            <span class="pill {{ u.status|yesno:'enabled,disabled' }}">
+                                {{ u.status|yesno:"Enabled,Disabled" }}
+                            </span>
+                            <div class="row-actions">
+                                <a class="mini enable" href="{% url 'enable_user' u.user_id %}">Enable</a>
+                                <a class="mini disable" href="{% url 'disable_user' u.user_id %}">Disable</a>
+                                <a class="mini delete" href="{% url 'delete_user' u.user_id %}">Delete</a>
+                            </div>
+                        </td>
+                        <td>—</td>
+                        <td>—</td>
+                        <td><div class="ip dim">—</div></td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="6" class="dim">No users yet. Create from the top.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+           
+        </main>
+    </div>
+</body>
+</html>

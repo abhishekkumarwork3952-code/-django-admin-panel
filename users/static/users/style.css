@@ -1,0 +1,44 @@
+*{box-sizing:border-box;font-family:Segoe UI, Arial}
+body{background:#f7f9fc;margin:0}
+.title{font-size:40px;text-align:center;padding:18px 0;background:#fff;color:#1b6ec2;
+    text-shadow:0 3px 6px rgba(0,0,0,.15);font-weight:800;border-bottom:4px solid #e6eefc}
+.layout{display:grid;grid-template-columns:220px 1fr;gap:18px;padding:18px;max-width:1200px;margin:0 auto}
+.sidebar{background:#0a2342;border-radius:14px;padding:12px;display:flex;flex-direction:column;gap:12px;align-self:start}
+.nav-btn{background:#143d6b;color:#fff;border:none;padding:12px;border-radius:12px;font-weight:600;cursor:pointer}
+.logout-side{margin-top:auto;display:block;background:#c62828;color:#fff;text-align:center;padding:12px;border-radius:12px;text-decoration:none;font-weight:700}
+.content{background:#fff;border-radius:16px;padding:16px;box-shadow:0 8px 24px rgba(16,24,40,.06)}
+.msg{background:#ecf7ff;border:1px solid #b6dbff;color:#1a5fb4;padding:10px 12px;border-radius:10px;margin-bottom:12px;display:inline-block}
+.top-actions{display:flex;flex-direction:column;gap:10px;margin-bottom:10px}
+.inline-form{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.action-btn{background:#2a90ff;color:#fff;border:none;padding:10px 14px;border-radius:10px;font-weight:700;cursor:pointer;box-shadow:0 2px 0 #1c6dcc}
+.action-btn.create{background:#2a90ff}
+.action-btn.enable{background:#2e7d32}
+.action-btn.disable{background:#b71c1c}
+.action-btn.delete{background:#9e1c1c}
+.action-btn.small{padding:8px 10px}
+.txt{padding:10px;border:2px inset #c9d7ee;border-radius:8px;min-width:160px;background:#eef4ff}
+.txt.small{min-width:120px}
+.action-row{display:flex;gap:16px;align-items:center;justify-content:space-between}
+.right-col{display:flex;gap:8px}
+.grid{width:100%;border-collapse:collapse;margin-top:10px}
+.grid th, .grid td{border:2px solid #d4e3fb;padding:10px;text-align:left}
+.grid thead th{background:#3aa3ff;color:#fff;border-color:#3aa3ff;text-transform:uppercase;letter-spacing:.5px}
+.pill{display:inline-block;padding:4px 8px;border-radius:999px;font-size:12px;font-weight:700}
+.pill.enabled{background:#e8f5e9;color:#1b5e20;border:1px solid #a5d6a7}
+.pill.disabled{background:#ffebee;color:#b71c1c;border:1px solid #ef9a9a}
+.mini{display:inline-block;padding:6px 10px;border-radius:8px;text-decoration:none;border:1px solid #cbd5e1;margin-right:6px;font-weight:600}
+.mini.enable{background:#e8f5e9}
+.mini.disable{background:#ffebee}
+.mini.delete{background:#fde0e0}
+.mini.login{background:#e3f2fd}
+.mini.logout{background:#ffe9d6}
+.ip{font-family:ui-monospace, Menlo, Consolas}
+.dim{opacity:.6}
+.note{margin-top:14px;font-size:14px;color:#333;background:#f1f5ff;border:1px dashed #9db9ff;padding:10px;border-radius:10px}
+
+/* login page */
+.login-body{display:flex;align-items:center;justify-content:center;min-height:100vh;background:#eef4ff}
+.login-card{background:#fff;padding:28px;border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,.08);width:360px}
+.login-card h2{margin:0 0 14px;color:#1b6ec2}
+.login-card .txt{width:100%;margin-bottom:10px}
+.login-card .action-btn{width:100%}
