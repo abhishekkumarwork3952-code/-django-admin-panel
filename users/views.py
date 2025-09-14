@@ -102,8 +102,9 @@ def logout_view(request):
         user_account.current_session = None
         user_account.session_key = None
         user_account.save()
-    except:
-        pass
+        print(f"DEBUG: Logout - cleared session for user: {current_user}")
+    except Exception as e:
+        print(f"DEBUG: Logout error: {e}")
     
     logout(request)
     return redirect('login')
