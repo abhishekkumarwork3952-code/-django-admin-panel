@@ -53,7 +53,14 @@ def login_view(request):
                 # Update UserAccount with login info and session tracking
                 user_account.is_logged_in = True
                 user_account.last_login = timezone.now()
-                user_account.device_ip = request.META.get('REMOTE_ADDR')
+                
+                # Get real IP from Nginx headers
+                x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+                if x_forwarded_for:
+                    user_account.device_ip = x_forwarded_for.split(',')[0]
+                else:
+                    user_account.device_ip = request.META.get('REMOTE_ADDR')
+                
                 user_account.current_session = request.session.session_key
                 user_account.session_key = request.session.session_key
                 user_account.save()
