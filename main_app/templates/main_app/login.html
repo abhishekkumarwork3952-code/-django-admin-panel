@@ -1,0 +1,137 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Main App Login</title>
+    <style>
+        * { box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif; }
+        body { 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0; 
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .login-container { 
+            background: white; 
+            padding: 40px; 
+            border-radius: 20px; 
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            width: 400px;
+            text-align: center;
+        }
+        .logo { 
+            font-size: 28px; 
+            color: #667eea; 
+            margin-bottom: 30px;
+            font-weight: bold;
+        }
+        .form-group { 
+            margin-bottom: 20px; 
+            text-align: left;
+        }
+        label { 
+            display: block; 
+            margin-bottom: 8px; 
+            color: #333; 
+            font-weight: 600;
+        }
+        input { 
+            width: 100%; 
+            padding: 15px; 
+            border: 2px solid #e1e5e9; 
+            border-radius: 10px; 
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        input:focus { 
+            outline: none; 
+            border-color: #667eea; 
+        }
+        .login-btn { 
+            width: 100%; 
+            padding: 15px; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white; 
+            border: none; 
+            border-radius: 10px; 
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .login-btn:hover { 
+            transform: translateY(-2px); 
+        }
+        .messages { 
+            margin-bottom: 20px; 
+        }
+        .message { 
+            padding: 12px; 
+            border-radius: 8px; 
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+        .message.error { 
+            background: #fee; 
+            color: #c33; 
+            border: 1px solid #fcc;
+        }
+        .message.success { 
+            background: #efe; 
+            color: #363; 
+            border: 1px solid #cfc;
+        }
+        .admin-link {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+        .admin-link a {
+            color: #667eea;
+            text-decoration: none;
+            font-size: 14px;
+        }
+        .admin-link a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="logo">🌐 Internet Art Tools</div>
+        <h2>Welcome Back!</h2>
+        <p style="color: #666; margin-bottom: 30px;">Please login to access your account</p>
+        
+        {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+            <div class="message {{ message.tags }}">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username" required placeholder="Enter your username">
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" required placeholder="Enter your password">
+            </div>
+            <button type="submit" class="login-btn">Login to App</button>
+        </form>
+        
+        <div class="admin-link">
+            <a href="/admin/">🔧 Admin Panel</a> | 
+            <a href="/dashboard/">📊 User Dashboard</a>
+        </div>
+    </div>
+</body>
+</html>

@@ -71,9 +71,27 @@
                                 <a class="mini delete" href="{% url 'delete_user' u.user_id %}">Delete</a>
                             </div>
                         </td>
-                        <td>—</td>
-                        <td>—</td>
-                        <td><div class="ip dim">—</div></td>
+                        <td>
+                            {% if u.is_logged_in %}
+                                <span class="pill online">Online</span>
+                            {% else %}
+                                <span class="pill offline">Offline</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if u.last_login %}
+                                {{ u.last_login|date:"M d, H:i" }}
+                            {% else %}
+                                Never
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if u.device_ip %}
+                                <div class="ip">{{ u.device_ip }}</div>
+                            {% else %}
+                                <div class="ip dim">—</div>
+                            {% endif %}
+                        </td>
                     </tr>
                     {% empty %}
                     <tr><td colspan="6" class="dim">No users yet. Create from the top.</td></tr>
