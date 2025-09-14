@@ -4,6 +4,10 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.utils import timezone
 from django.contrib.auth.models import User
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_http_methods
+import json
 from .models import UserAccount
 
 def login_view(request):
@@ -142,3 +146,60 @@ def delete_user(request, user_id):
     u = get_object_or_404(UserAccount, user_id=user_id)
     u.delete()
     return redirect('/dashboard/?msg=Deleted')
+
+# API endpoint for AI Mailer Pro to logout users automatically
+@csrf_exempt
+@require_http_methods(["POST"])
+def api_logout_user(request):
+    """
+    API endpoint for AI Mailer Pro to logout users automatically
+    POST /api/logout/
+    Body: {"username": "user_id", "password": "password"}
+    """
+    try:
+        # Parse JSON data
+        data = json.loads(request.body)
+        username = data.get('username')
+        password = data.get('password')
+        
+        print(f"DEBUG: API Logout request for user: {username}")
+        
+        # Verify user credentials
+        try:
+            user_account = UserAccount.objects.get(user_id=username)
+            if user_account.password == password:
+                # Clear session data
+                user_account.is_logged_in = False
+                user_account.current_session = None
+                user_account.session_key = None
+                user_account.save()
+                
+                print(f"DEBUG: API Logout - cleared session for user: {username}")
+                
+                return JsonResponse({
+                    'status': 'success',
+                    'message': f'User {username} logged out successfully'
+                })
+            else:
+                return JsonResponse({
+                    'status': 'error',
+                    'message': 'Invalid password'
+                }, status=401)
+                
+        except UserAccount.DoesNotExist:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'User not found'
+            }, status=404)
+            
+    except json.JSONDecodeError:
+        return JsonResponse({
+            'status': 'error',
+            'message': 'Invalid JSON data'
+        }, status=400)
+    except Exception as e:
+        print(f"DEBUG: API Logout error: {e}")
+        return JsonResponse({
+            'status': 'error',
+            'message': 'Internal server error'
+        }, status=500)
