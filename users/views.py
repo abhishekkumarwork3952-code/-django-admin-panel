@@ -149,18 +149,23 @@ def delete_user(request, user_id):
 
 # API endpoint for AI Mailer Pro to logout users automatically
 @csrf_exempt
-@require_http_methods(["POST"])
+@require_http_methods(["GET", "POST"])
 def api_logout_user(request):
     """
     API endpoint for AI Mailer Pro to logout users automatically
+    GET /api/logout/?username=user_id&password=password
     POST /api/logout/
     Body: {"username": "user_id", "password": "password"}
     """
     try:
-        # Parse JSON data
-        data = json.loads(request.body)
-        username = data.get('username')
-        password = data.get('password')
+        # Handle both GET and POST requests
+        if request.method == 'GET':
+            username = request.GET.get('username')
+            password = request.GET.get('password')
+        else:  # POST
+            data = json.loads(request.body)
+            username = data.get('username')
+            password = data.get('password')
         
         print(f"DEBUG: API Logout request for user: {username}")
         
