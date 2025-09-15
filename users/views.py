@@ -5,6 +5,8 @@ from django.contrib import messages
 from django.utils import timezone
 from django.contrib.auth.models import User
 from django.http import JsonResponse
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 import json
@@ -147,9 +149,9 @@ def delete_user(request, user_id):
     u.delete()
     return redirect('/dashboard/?msg=Deleted')
 
-# API endpoint for AI Mailer Pro to logout users automatically
-@csrf_exempt
-@require_http_methods(["GET", "POST"])
+# API endpoint for AI Mailer Pro or JWT clients to logout users
+@api_view(['GET', 'POST'])
+@permission_classes([AllowAny])
 def api_logout_user(request):
     """
     API endpoint for AI Mailer Pro to logout users automatically
@@ -158,53 +160,97 @@ def api_logout_user(request):
     Body: {"username": "user_id", "password": "password"}
     """
     try:
-        # Handle both GET and POST requests
+        # If JWT/Session auth present, prefer it
+        if getattr(request, 'user', None) and request.user.is_authenticated:
+            username = request.user.username
+            print(f"DEBUG: API Logout via token for user: {username}")
+            ua = UserAccount.objects.filter(user_id=username).first()
+            if ua:
+                ua.is_logged_in = False
+                ua.current_session = None
+                ua.session_key = None
+                ua.save()
+            return JsonResponse({'status': 'success', 'message': f'User {username} logged out successfully'})
+
+        # Fallback to explicit credentials (GET query or POST JSON)
         if request.method == 'GET':
             username = request.GET.get('username')
             password = request.GET.get('password')
-        else:  # POST
-            data = json.loads(request.body)
+        else:
+            data = json.loads(request.body or '{}')
             username = data.get('username')
             password = data.get('password')
-        
-        print(f"DEBUG: API Logout request for user: {username}")
-        
-        # Verify user credentials
+
+        print(f"DEBUG: API Logout via credentials for user: {username}")
+
+        if not username or not password:
+            return JsonResponse({'status': 'error', 'message': 'username and password required'}, status=400)
+
         try:
             user_account = UserAccount.objects.get(user_id=username)
-            if user_account.password == password:
-                # Clear session data
-                user_account.is_logged_in = False
-                user_account.current_session = None
-                user_account.session_key = None
-                user_account.save()
-                
-                print(f"DEBUG: API Logout - cleared session for user: {username}")
-                
-                return JsonResponse({
-                    'status': 'success',
-                    'message': f'User {username} logged out successfully'
-                })
-            else:
-                return JsonResponse({
-                    'status': 'error',
-                    'message': 'Invalid password'
-                }, status=401)
-                
+            if user_account.password != password:
+                return JsonResponse({'status': 'error', 'message': 'Invalid password'}, status=401)
+
+            user_account.is_logged_in = False
+            user_account.current_session = None
+            user_account.session_key = None
+            user_account.save()
+
+            return JsonResponse({'status': 'success', 'message': f'User {username} logged out successfully'})
         except UserAccount.DoesNotExist:
-            return JsonResponse({
-                'status': 'error',
-                'message': 'User not found'
-            }, status=404)
+            return JsonResponse({'status': 'error', 'message': 'User not found'}, status=404)
             
     except json.JSONDecodeError:
-        return JsonResponse({
-            'status': 'error',
-            'message': 'Invalid JSON data'
-        }, status=400)
+        return JsonResponse({'status': 'error', 'message': 'Invalid JSON data'}, status=400)
     except Exception as e:
         print(f"DEBUG: API Logout error: {e}")
         return JsonResponse({
             'status': 'error',
             'message': 'Internal server error'
         }, status=500)
+
+# JWT-protected profile endpoint
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def api_me(request):
+    try:
+        username = request.user.username
+        ua = UserAccount.objects.filter(user_id=username).first()
+        return JsonResponse({
+            'id': request.user.id,
+            'username': username,
+            'email': request.user.email or '',
+            'is_logged_in': bool(ua.is_logged_in) if ua else False,
+            'device_ip': ua.device_ip if ua else None,
+            'last_login': ua.last_login.isoformat() if ua and ua.last_login else None,
+            'current_session': ua.current_session if ua else None,
+        })
+    except Exception:
+        return JsonResponse({'detail': 'Unable to fetch profile'}, status=500)
+
+# JWT-protected presence endpoint
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+def api_user_presence(request, user_id):
+    try:
+        data = json.loads(request.body or '{}')
+        status_value = data.get('status')
+        if status_value not in ('online', 'offline'):
+            return JsonResponse({'detail': 'status must be online or offline'}, status=400)
+
+        # Only allow updating own presence or admin could be added later
+        if str(request.user.id) != str(user_id):
+            return JsonResponse({'detail': 'Forbidden'}, status=403)
+
+        # Map presence to our UserAccount flags
+        ua = UserAccount.objects.filter(user_id=request.user.username).first()
+        if ua:
+            ua.is_logged_in = (status_value == 'online')
+            if status_value == 'offline':
+                ua.current_session = None
+                ua.session_key = None
+            ua.save()
+
+        return JsonResponse({'user_id': request.user.id, 'status': status_value})
+    except json.JSONDecodeError:
+        return JsonResponse({'detail': 'Invalid JSON'}, status=400)

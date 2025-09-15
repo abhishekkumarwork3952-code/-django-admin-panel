@@ -54,15 +54,27 @@ def api_login(request):
                     'code': 'ACCOUNT_DISABLED'
                 }, status=403)
             
+            # Enforce single session
+            if user_account.is_logged_in and user_account.current_session:
+                logger.warning(f"API Login blocked - already logged in elsewhere: {username}")
+                return JsonResponse({
+                    'success': False,
+                    'error': 'User already logged in elsewhere',
+                    'code': 'ALREADY_LOGGED_IN'
+                }, status=409)
+            
             # Check password
             if user_account.password == password:
                 # Update login info
                 user_account.is_logged_in = True
                 user_account.last_login = timezone.now()
                 user_account.device_ip = request.META.get('REMOTE_ADDR')
+                # Use session_key as logical session id for API caller context
+                user_account.current_session = request.session.session_key or 'api'
+                user_account.session_key = user_account.current_session
                 user_account.save()
                 
-                # Create session
+                # Create session tracking record
                 UserSession.objects.create(
                     user_account=user_account,
                     ip_address=request.META.get('REMOTE_ADDR'),
@@ -176,6 +188,8 @@ def api_logout(request):
             try:
                 user_account = UserAccount.objects.get(user_id=user_id)
                 user_account.is_logged_in = False
+                user_account.current_session = None
+                user_account.session_key = None
                 user_account.save()
                 
                 # End current session
